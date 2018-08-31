@@ -22,61 +22,61 @@ var footer = {
     this.render()
   },
   bind: function() {
-      var that = this
-      this.$rightBtn.on('click',function(){
-          if (that.isAnimate) return//判断按钮是不是正在一直点击
+    var that = this
+    this.$rightBtn.on('click',function(){
+        if (that.isAnimate) return//判断按钮是不是正在一直点击
 
-          var itemWidth = that.$box.find('li').outerWidth(true)//单个li的width
-          var rowCount = Math.floor(that.$box.width()/itemWidth)//计算一行能放几个li
-          if(!that.isToEnd){
-            that.isAnimate = true
-            that.$ul.animate({
-                left:'-=' + rowCount*itemWidth
-            },500,function(){
-                that.isAnimate = false
-                that.isToStart = false
-                var boxWidth = parseInt(that.$box.width())
-                var ulLeft = parseInt(that.$ul.css('left'))
-                var ulWidth = parseInt(that.$ul.width())
-                if ( boxWidth - ulLeft >= ulWidth ){
-                    // console.log("over")
-                    that.isToEnd = true
-                }
-            })
-          }
-      })
-
-      this.$leftBtn.on('click',function(){
         var itemWidth = that.$box.find('li').outerWidth(true)//单个li的width
         var rowCount = Math.floor(that.$box.width()/itemWidth)//计算一行能放几个li
-        if (that.isAnimate) return
-        if (!that.isToStart){
-            that.isAnimate = true
-            that.$ul.animate({
-                left:'+=' + rowCount*itemWidth
-            },500,function(){
-                that.isAnimate = false
-                that.isToEnd = false
-                var boxWidth = parseInt(that.$box.width())
-                var ulLeft = parseInt(that.$ul.css('left'))
-                var ulWidth = parseInt(that.$ul.width())
-                if ( ulLeft >= 0 ){
-                    // console.log("over")
-                    that.isToStart = true
-                }
-            })
+        if(!that.isToEnd){
+        that.isAnimate = true
+        that.$ul.animate({
+            left:'-=' + rowCount*itemWidth
+        },500,function(){
+            that.isAnimate = false
+            that.isToStart = false
+            var boxWidth = parseInt(that.$box.width())
+            var ulLeft = parseInt(that.$ul.css('left'))
+            var ulWidth = parseInt(that.$ul.width())
+            if ( boxWidth - ulLeft >= ulWidth ){
+                // console.log("over")
+                that.isToEnd = true
+            }
+        })
         }
-      })
+    })
 
-      this.$footer.on('click','li',function(){
-          $(this).addClass('active')
-            .siblings().removeClass('active')
+    this.$leftBtn.on('click',function(){
+    var itemWidth = that.$box.find('li').outerWidth(true)//单个li的width
+    var rowCount = Math.floor(that.$box.width()/itemWidth)//计算一行能放几个li
+    if (that.isAnimate) return
+    if (!that.isToStart){
+        that.isAnimate = true
+        that.$ul.animate({
+            left:'+=' + rowCount*itemWidth
+        },500,function(){
+            that.isAnimate = false
+            that.isToEnd = false
+            var boxWidth = parseInt(that.$box.width())
+            var ulLeft = parseInt(that.$ul.css('left'))
+            var ulWidth = parseInt(that.$ul.width())
+            if ( ulLeft >= 0 ){
+                // console.log("over")
+                that.isToStart = true
+            }
+        })
+    }
+    })
 
-          EventCenter.fire('music-albumn',{
-            channelId: $(this).attr('data-channel-id'),
-            channelName: $(this).attr('data-channel-name')
-          })
-      })
+    this.$footer.on('click','li',function(){
+        $(this).addClass('active')
+        .siblings().removeClass('active')
+
+        EventCenter.fire('music-albumn',{
+        channelId: $(this).attr('data-channel-id'),
+        channelName: $(this).attr('data-channel-name')
+        })
+    })
   },
   render: function() {
     var that = this
@@ -121,8 +121,63 @@ var footer = {
   }
 }
 
-footer.init()
 
-// EventCenter.on('music-albumn',function(e,data){
-//     console.log(data)
-// })
+var app = {
+    init:function(){
+        this.$container = $('#page-music')
+        this.audio = new Audio()
+        this.audio.autoplay = true
+        this.bind()
+    },
+    bind:function(){
+        var that = this
+        EventCenter.on('music-albumn',function(e,channel){  
+            that.channelId = channel.channelId
+            that.channelName = channel.channelName
+            that.loadMusic(function(){
+                that.setMusic()
+            })
+        })
+
+        this.$container.find('.btn-play').on('click',function(){
+            if ($(this).hasClass('icon-pause')){
+                $(this).removeClass('icon-pause').addClass('icon-play')
+                that.audio.pause()
+            }else{
+                $(this).removeClass('icon-play').addClass('icon-pause')
+                that.audio.play()
+            }
+        })
+
+        this.$container.find('.btn-next').on('click',function(){
+            that.loadMusic(function(){
+                that.setMusic()
+            })
+        })
+    },
+    loadMusic:function(callback){
+        var that = this
+        $.ajax({
+            url:'https://jirenguapi.applinzi.com/fm/getSong.php',
+            dataType:'json',
+            data:this.channelId
+        }).done(function(res){
+            that.song = res.song[0]
+            callback()
+        })
+    },
+    setMusic:function(){
+        console.log(this.song)
+        this.audio.src = this.song.url
+        this.$container.find('.music-img').css('background-image','url('+this.song.picture +')')
+        this.$container.find('.music-detail h2').text(this.song.title)
+        this.$container.find('.music-detail .author').text(this.song.artist)
+        this.$container.find('.tag').text(this.channelName)
+    }
+}
+
+
+footer.init()
+app.init()
+
+
