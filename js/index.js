@@ -120,6 +120,7 @@ var app = {
         this.audio = new Audio()
         this.audio.autoplay = true
         this.bind()
+        this.loadMusic()
     },
     bind:function(){
         var that = this
@@ -161,6 +162,7 @@ var app = {
         })
 
         this.audio.addEventListener('end',function(){
+            console.log("自动下一曲")
             that.loadMusic()
         })
 
@@ -278,5 +280,4 @@ $.fn.lyricAnimate = function(type){
 
 footer.init()
 app.init()
-
 
