@@ -140,15 +140,17 @@ var app = {
         })
 
         this.$container.find('.btn-next').on('click',function(){
-            that.loadMusic(function(){
-                that.setMusic()
-            })
+            that.loadMusic()
         })
 
+        this.audio.addEventListener('end',function(){
+            that.loadMusic()
+        })
         this.audio.addEventListener('play',function(){
             clearInterval(that.clock)
             that.clock = setInterval(function(){
                 that.updateState()
+                that.loadLyric()
             },1000)
         })
 
@@ -167,7 +169,6 @@ var app = {
         }).done(function(res){
             that.song = res.song[0]
             that.setMusic()
-            that.loadLyric()
         })
     },
     setMusic:function(){
@@ -177,6 +178,13 @@ var app = {
         this.$container.find('.music-detail h2').text(this.song.title)
         this.$container.find('.music-detail .author').text(this.song.artist)
         this.$container.find('.tag').text(this.channelName)
+        if (this.song.lrc){
+            console.log("执行了吗")
+            this.loadLyric()
+        }else{
+            console.log("空了的")
+            this.$container.find('.lyric p').text('')
+        }
     },
     updateState:function(){
         var min = Math.floor(this.audio.currentTime/60)
@@ -184,7 +192,6 @@ var app = {
         second = second.length === 2 ? second : '0' + second
         this.$container.find('.current-time').text(min + ':' + second)
         this.$container.find('.bar-progress').css('width', this.audio.currentTime/this.audio.duration * 100 + '%')
-        this.setLyric()
     },
     loadLyric:function(){
         var that = this
@@ -192,11 +199,10 @@ var app = {
             url:'https://jirenguapi.applinzi.com/fm/getLyric.php',
             dataType:'json',
             data:{
-                sid:this.song.sid
+                sid:that.song.sid
             }
         }).done(function(res){
-            console.log("lyric")
-            console.log(res.lyric)
+            // console.log(res.lyric)
             if (res.lyric){
                 var lyricObj = {}
                 res.lyric.split('\n').forEach(function(line){
@@ -208,18 +214,20 @@ var app = {
                     }
                 })
                 that.lyricObj = lyricObj
+                that.setLyric()
             }
         })
     },
     setLyric:function(){
-        console.log(this.lyricObj,"set")
+        // console.log(this.lyricObj,"set")
         if (this.lyricObj){
+            console.log("有歌词的地方",12)
             var min = Math.floor(this.audio.currentTime/60)
             var second = Math.floor(this.audio.currentTime%60) + ''
             second = second.length === 2 ? second : '0' + second
             var line = this.lyricObj['0'+min+':'+second]
             if (line){
-                this.$container.find('.lyric').text(line)
+                this.$container.find('.lyric p').text(line).lyricAnimate()    
             }
         }
     }
@@ -230,12 +238,10 @@ var app = {
 
 $.fn.lyricAnimate = function(type){
     type = type || 'zoomIn'
-    console.log(type)
     this.html(function(){
         var arr = $(this).text().split('').map(function(world){
             return '<span class="bottomText">'+world+ '</span>'
         })
-        console.log(arr,"arr")
         return arr.join('')
     })
 
