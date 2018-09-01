@@ -116,6 +116,7 @@ var footer = {
 var app = {
     init:function(){
         this.$container = $('#page-music')
+        this.clock = null
         this.audio = new Audio()
         this.audio.autoplay = true
         this.bind()
@@ -125,9 +126,7 @@ var app = {
         EventCenter.on('music-albumn',function(e,channel){
             that.channelId = channel.channelId
             that.channelName = channel.channelName
-            that.loadMusic(function(){
-                that.setMusic()
-            })
+            that.loadMusic()
         })
 
         this.$container.find('.btn-play').on('click',function(){
@@ -145,8 +144,19 @@ var app = {
                 that.setMusic()
             })
         })
+
+        this.audio.addEventListener('play',function(){
+            clearInterval(that.clock)
+            that.clock = setInterval(function(){
+                that.updateState()
+            },1000)
+        })
+
+        this.audio.addEventListener('pause',function(){
+            clearInterval(that.clock)
+        })
     },
-    loadMusic:function(callback){
+    loadMusic:function(){
         var that = this
         $.ajax({
             url:'https://jirenguapi.applinzi.com/fm/getSong.php',
@@ -156,7 +166,8 @@ var app = {
             }
         }).done(function(res){
             that.song = res.song[0]
-            callback()
+            that.setMusic()
+            that.loadLyric()
         })
     },
     setMusic:function(){
@@ -166,6 +177,46 @@ var app = {
         this.$container.find('.music-detail h2').text(this.song.title)
         this.$container.find('.music-detail .author').text(this.song.artist)
         this.$container.find('.tag').text(this.channelName)
+    },
+    updateState:function(){
+        var min = Math.floor(this.audio.currentTime/60)
+        var second = Math.floor(this.audio.currentTime%60) + ''
+        second = second.length === 2 ? second : '0' + second
+        this.$container.find('.current-time').text(min + ':' + second)
+        this.$container.find('.bar-progress').css('width', this.audio.currentTime/this.audio.duration * 100 + '%')
+        this.setLyric()
+    },
+    loadLyric:function(){
+        var that = this
+        $.ajax({
+            url:'https://jirenguapi.applinzi.com/fm/getLyric.php',
+            dataType:'json',
+            data:{
+                sid:this.song.sid
+            }
+        }).done(function(res){
+            console.log(res)
+            var lyricObj = {}
+            res.lyric.split('\n').forEach(function(line){
+                var timeArr = line.match(/\d{2}:\d{2}/g)
+                if(timeArr){
+                    timeArr.forEach(function(time){
+                        lyricObj[time] = line.replace(/\[.+?\]/g, '')
+                    })
+                }
+            })
+            that.lyricObj = lyricObj
+        })
+    },
+    setLyric:function(){
+        // console.log(this.lyricObj)
+        var min = Math.floor(this.audio.currentTime/60)
+        var second = Math.floor(this.audio.currentTime%60) + ''
+        second = second.length === 2 ? second : '0' + second
+        var line = this.lyricObj['0'+min+':'+second]
+        if (line){
+            this.$container.find('.lyric').text(line)
+        }
     }
 }
 
