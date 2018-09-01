@@ -153,7 +153,7 @@ main .area-bar .current-time {
 main .area-bar .bar-progress {
   position: absolute;
   height: 0.8vh;
-  width: 10%;
+  width: 0%;
   transition: width 0.8s;
   background-color: #fff;
   border-radius: 0.2vh;
@@ -238,15 +238,27 @@ footer .iconfont {
   transition: all 0.4s;
   cursor: pointer;
 }
+
 footer:hover .iconfont {
   opacity: 1;
 }
+
 footer .iconfont:hover {
   color: rgba(255, 255, 255, 0.8);
 }
+
 footer .icon-left {
   left: -8vh;
 }
+
 footer .icon-right {
   right: -8vh;
+}
+
+.boomText{
+  display: inline-block;
+  opacity: 0;
+}
+.zoomIn{
+  color: aqua; 
 }
