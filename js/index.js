@@ -143,19 +143,39 @@ var app = {
             that.loadMusic()
         })
 
+        this.$container.find('.bar').on('click',function(e){
+            console.log(e)
+            var percent = e.offsetX/parseInt($(this).width())
+            console.log(percent)
+            that.audio.currentTime = percent * that.audio.duration
+            that.$container.find('.bar').css('width',percent*100+"%")
+        })
+
+        this.$container.find('.btn-collect').on('click',function(){
+            var $btn = that.$container.find('.btn-collect')
+            if($btn.hasClass('active')){
+                $btn.removeClass('active')
+            }else{
+                $btn.addClass('active')
+            }
+        })
+
         this.audio.addEventListener('end',function(){
             that.loadMusic()
         })
+
         this.audio.addEventListener('play',function(){
             clearInterval(that.clock)
             that.clock = setInterval(function(){
                 that.updateState()
                 that.loadLyric()
             },1000)
+            that.$container.find('.music-img').removeClass('pause').addClass('play')
         })
 
         this.audio.addEventListener('pause',function(){
             clearInterval(that.clock)
+            that.$container.find('.music-img').removeClass('play').addClass('pause')
         })
     },
     loadMusic:function(){
