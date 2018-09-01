@@ -95,19 +95,10 @@ var footer = {
     console.log(channels)
     var html = ""
     channels.forEach(function(channel) {
-      html +=
-        "<li data-channel-id=" +
-        channel.channel_id +
-        " data-channel-name=" +
-        channel.name +
-        ">" +
-        '<div class="cover" style="background-image:url(' +
-        channel.cover_small +
-        ')"></div>' +
-        "<h2>" +
-        channel.name +
-        "</h2>" +
-        "</li>"
+      html +="<li data-channel-id=" +channel.channel_id +" data-channel-name=" + channel.name +">" 
+           +'<div class="cover" style="background-image:url(' + channel.cover_small +')"></div>'
+           +"<h2>" +channel.name +"</h2>"
+           +"</li>"
     })
     this.$ul.html(html)
     this.setStyle()
@@ -131,7 +122,7 @@ var app = {
     },
     bind:function(){
         var that = this
-        EventCenter.on('music-albumn',function(e,channel){  
+        EventCenter.on('music-albumn',function(e,channel){
             that.channelId = channel.channelId
             that.channelName = channel.channelName
             that.loadMusic(function(){
@@ -160,7 +151,9 @@ var app = {
         $.ajax({
             url:'https://jirenguapi.applinzi.com/fm/getSong.php',
             dataType:'json',
-            data:this.channelId
+            data:{
+                channel:this.channelId
+            }
         }).done(function(res){
             that.song = res.song[0]
             callback()
