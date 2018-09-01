@@ -215,11 +215,35 @@ var app = {
         second = second.length === 2 ? second : '0' + second
         var line = this.lyricObj['0'+min+':'+second]
         if (line){
-            this.$container.find('.lyric').text(line)
+            this.$container.find('.lyric p').text(line).lyricAnimate()
         }
     }
 }
 
+
+// jq插件歌词动画
+
+$.fn.lyricAnimate = function(type){
+    type = type || 'zoomIn'
+    console.log(type)
+    this.html(function(){
+        var arr = $(this).text().split('').map(function(world){
+            return '<span class="bottomText">'+world+ '</span>'
+        })
+        console.log(arr,"arr")
+        return arr.join('')
+    })
+
+    var index = 0
+    var $texts = $(this).find('span')
+    var clock = setInterval(function(){
+        $texts.eq(index).addClass('animated ' + type)
+        index++
+        if(index >= $texts.length){
+            clearInterval(clock)
+        }
+    },300)
+}
 
 footer.init()
 app.init()
