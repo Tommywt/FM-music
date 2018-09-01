@@ -92,7 +92,7 @@ var footer = {
       })
   },
   renderFooter: function(channels) {
-    console.log(channels)
+    // console.log(channels)
     var html = ""
     channels.forEach(function(channel) {
       html +="<li data-channel-id=" +channel.channel_id +" data-channel-name=" + channel.name +">" 
@@ -195,27 +195,32 @@ var app = {
                 sid:this.song.sid
             }
         }).done(function(res){
-            console.log(res)
-            var lyricObj = {}
-            res.lyric.split('\n').forEach(function(line){
-                var timeArr = line.match(/\d{2}:\d{2}/g)
-                if(timeArr){
-                    timeArr.forEach(function(time){
-                        lyricObj[time] = line.replace(/\[.+?\]/g, '')
-                    })
-                }
-            })
-            that.lyricObj = lyricObj
+            console.log("lyric")
+            console.log(res.lyric)
+            if (res.lyric){
+                var lyricObj = {}
+                res.lyric.split('\n').forEach(function(line){
+                    var timeArr = line.match(/\d{2}:\d{2}/g)
+                    if(timeArr){
+                        timeArr.forEach(function(time){
+                            lyricObj[time] = line.replace(/\[.+?\]/g, '')
+                        })
+                    }
+                })
+                that.lyricObj = lyricObj
+            }
         })
     },
     setLyric:function(){
-        // console.log(this.lyricObj)
-        var min = Math.floor(this.audio.currentTime/60)
-        var second = Math.floor(this.audio.currentTime%60) + ''
-        second = second.length === 2 ? second : '0' + second
-        var line = this.lyricObj['0'+min+':'+second]
-        if (line){
-            this.$container.find('.lyric').text(line)
+        console.log(this.lyricObj,"set")
+        if (this.lyricObj){
+            var min = Math.floor(this.audio.currentTime/60)
+            var second = Math.floor(this.audio.currentTime%60) + ''
+            second = second.length === 2 ? second : '0' + second
+            var line = this.lyricObj['0'+min+':'+second]
+            if (line){
+                this.$container.find('.lyric').text(line)
+            }
         }
     }
 }
